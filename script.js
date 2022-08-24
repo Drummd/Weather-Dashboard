@@ -1,7 +1,3 @@
-
-
-
-
 var temperature = $("#temperature")
 //api will call in first search 7997643fbfaa2c17f66ac2ab91bdcea0
 var wind = $("#wind-speed")
@@ -17,19 +13,13 @@ var fiveDay = $('.fiveDay')
 
 var searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
 
-function displayWeather(event) {
-    event.preventDefault();
-    if(citySearch.val().trim()!==""){
-        city=citySearch.val().trim();
-        current(city);
-    }
-};
-search.on('click', async function() {
-    console.log(citySearch.val())
-
-    cityHistory(citySearch.val());
-
-    var requestUrl = 'http://api.openweathermap.org/geo/1.0/direct?q='+citySearch.val()+'&appid=752927b6e41474a250396108bc4941a3&units=imperial'
+async function displayWeather(city) {
+    // event.preventDefault();
+    // if(citySearch.val().trim()!==""){
+    //     city=citySearch.val().trim();
+    //     current(city);
+    // }
+    var requestUrl = 'http://api.openweathermap.org/geo/1.0/direct?q='+city+'&appid=752927b6e41474a250396108bc4941a3&units=imperial'
     console.log(requestUrl)
     var response = await fetch(requestUrl)
     response = await response.json()
@@ -38,7 +28,7 @@ search.on('click', async function() {
     var response2 = await fetch(oneCall)
     var weatherData = await response2.json()
     console.log(weatherData)
-    cityName.text(citySearch.val())
+    cityName.text(city)
     var temp = weatherData.current.temp
     var humidity = weatherData.current.humidity
     temperature.text(temp)
@@ -66,7 +56,45 @@ search.on('click', async function() {
 
          fiveDay.append(div,fivedayTemp,fivedayWind,fivedayHu)
     }
+    getSearchHistory()
+};
+
+
+search.on('click', function() {
+    var city = citySearch.val()
+
+    cityHistory(citySearch.val());
+
+displayWeather(city)
 });
+
+function getSearchHistory() {
+    $('#searchHistory').html("")
+    var history = localStorage.getItem('searchHistory')
+    history = JSON.parse(history)
+    console.log(history)
+    console.log(typeof history)
+    for(var i = 0; i<history.length; i++) {
+        var location = history[i]
+        
+        var btn = $('<btn>')
+        btn.text(location)
+        btn.attr('id', location)
+        btn.on('click', async function() {
+            var searchTerm = this.id
+            var requestUrl = 'http://api.openweathermap.org/geo/1.0/direct?q='+searchTerm+'&appid=752927b6e41474a250396108bc4941a3&units=imperial'
+    console.log(requestUrl)
+    var response = await fetch(requestUrl)
+    response = await response.json()
+    console.log(response)
+            console.log(this.id)
+            
+        })
+        $('#searchHistory').append(btn)
+    }
+};
+
+getSearchHistory()
 
 //need to get a search history and local storage and a clear history submit 
 $("#clear-history")
@@ -89,6 +117,11 @@ $('#clear-history').on('click', function() {
 // key(citySearch)
 //use .name with fetch and or maybe use the
 // 
+$('#searchHistory').on('click', function(event) {
+    var city = event.target.innerText
+    console.log(city)
+    displayWeather(city)
+})
 
 
 
@@ -96,3 +129,6 @@ $('#clear-history').on('click', function() {
 //write a function that allows user to click on those recent searches again 
 //--------- and fetch the inital api as if it was a submit search
 //--------- the submit search would most likely be a boolean 
+
+
+
